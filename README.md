@@ -1,149 +1,609 @@
-# RAG Support MVP
+# RAG Support Assistant
 
-A portfolio-ready AI customer support / internal knowledge assistant.
+A full-stack internal knowledge assistant that lets users upload support documents, ask questions, and receive grounded AI-generated answers with source citations.
 
-This project lets users upload documents, stores document chunks in PostgreSQL with pgvector, retrieves relevant chunks using vector similarity search, and answers questions with citations.
+This project demonstrates a production-style Retrieval-Augmented Generation pipeline using **FastAPI**, **PostgreSQL**, **pgvector**, **Sentence Transformers**, **Ollama**, and **Streamlit**.
 
-## What this demonstrates
+The goal of this project is not only to build a chatbot, but to show how a normal backend system can be extended with AI capabilities such as document ingestion, semantic search, grounded answer generation, source citation, duplicate protection, and conversation history.
 
-- Backend API design with FastAPI
-- PostgreSQL + pgvector for vector search
-- Document ingestion and chunking
-- Embedding generation
-- Retrieval-Augmented Generation (RAG)
-- Docker-based local development
-- Clean architecture without LangChain magic
+---
+
+## Features
+
+* Upload `.txt` and `.pdf` documents
+* Extract readable text from uploaded files
+* Split documents into searchable chunks
+* Generate embeddings using Sentence Transformers
+* Store documents, chunks, and embeddings in PostgreSQL with pgvector
+* Ask questions against indexed documents
+* Retrieve the most relevant document chunks using vector similarity search
+* Generate grounded answers using Ollama
+* Return source citations for retrieved chunks
+* Prevent duplicate document ingestion using content hashing
+* List indexed documents
+* Delete documents and their related chunks
+* Create conversations
+* Store user and assistant message history
+* Use FastAPI Swagger docs for API testing
+* Use Streamlit as a simple frontend demo
+
+---
+
+## Tech Stack
+
+### Backend
+
+* Python
+* FastAPI
+* SQLAlchemy
+* PostgreSQL
+* pgvector
+* Pydantic
+* Uvicorn
+
+### AI / RAG
+
+* Sentence Transformers
+* Ollama
+* Local LLM inference
+* Vector embeddings
+* Semantic search
+* Retrieval-Augmented Generation
+
+### Frontend
+
+* Streamlit
+* HTTPX
+
+### Infrastructure
+
+* Docker Compose
+* PostgreSQL container with pgvector extension
+
+---
 
 ## Architecture
 
 ```text
 User uploads document
         ↓
+FastAPI receives file
+        ↓
 Text extraction
         ↓
-Chunking
+Text chunking
         ↓
-Embedding generation
+Embedding model converts chunks into vectors
         ↓
-Store chunks + vectors in PostgreSQL/pgvector
+PostgreSQL + pgvector stores chunks and vectors
         ↓
 User asks question
         ↓
-Question embedding
+Question is embedded
         ↓
-Top-k vector search
+Vector search retrieves relevant chunks
         ↓
-Prompt LLM with retrieved context
+Retrieved context + question are sent to Ollama
         ↓
-Answer + source citations
+LLM generates grounded answer with sources
+        ↓
+Conversation history is saved
 ```
 
-## Tech stack
+---
 
-- Python 3.11
-- FastAPI
-- PostgreSQL 16
-- pgvector
-- SQLAlchemy
-- Sentence Transformers for local embeddings
-- Ollama or OpenAI-compatible response generation
+## Project Structure
 
-## Quick start
+```text
+rag-support-mvp/
+│
+├── app/
+│   ├── main.py
+│   ├── config.py
+│   ├── database.py
+│   ├── models.py
+│   ├── schemas.py
+│   │
+│   └── services/
+│       ├── chunker.py
+│       ├── embeddings.py
+│       ├── extraction.py
+│       ├── ingestion.py
+│       ├── llm.py
+│       └── rag.py
+│
+├── sample_docs/
+│   └── company_policy.txt
+│
+├── scripts/
+│   └── smoke_test.py
+│
+├── streamlit_app.py
+├── docker-compose.yml
+├── requirements.txt
+├── .env.example
+├── .gitignore
+└── README.md
+```
 
-### 1. Start PostgreSQL with pgvector
+---
+
+## Running Locally
+
+### Prerequisites
+
+Make sure these are installed:
+
+* Python 3.12
+* Docker Desktop
+* Ollama
+* Git
+
+This project was tested locally on Windows using Python 3.12.
+
+---
+
+## 1. Start PostgreSQL with pgvector
 
 ```bash
 docker compose up -d db
 ```
 
-### 2. Create virtual environment
+Check that the database is running:
+
+```bash
+docker compose ps
+```
+
+---
+
+## 2. Create a Virtual Environment
 
 ```bash
 python -m venv .venv
-source .venv/bin/activate  # macOS/Linux
-# .venv\Scripts\activate  # Windows
 ```
 
-### 3. Install dependencies
+Activate it on Windows:
+
+```bash
+.venv\Scripts\activate
+```
+
+---
+
+## 3. Install Dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 4. Configure environment
+If PyTorch has DLL issues on Windows, reinstall the CPU-only version:
 
 ```bash
-cp .env.example .env
+pip uninstall -y torch torchvision torchaudio
+pip cache purge
+pip install --no-cache-dir torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
 ```
 
-Default mode uses local embeddings with Sentence Transformers and Ollama for answer generation.
+---
 
-To use Ollama:
+## 4. Create Environment File
+
+```bash
+copy .env.example .env
+```
+
+Example `.env` configuration:
+
+```env
+DATABASE_URL=postgresql+psycopg://rag_user:rag_password@localhost:5432/rag_support
+EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2
+LLM_PROVIDER=ollama
+OLLAMA_BASE_URL=http://127.0.0.1:11434
+OLLAMA_MODEL=llama3.1:8b
+OPENAI_API_KEY=
+```
+
+Do not commit `.env` to Git.
+
+---
+
+## 5. Prepare Ollama Model
+
+Pull the local LLM model:
 
 ```bash
 ollama pull llama3.1:8b
-ollama serve
 ```
 
-To use OpenAI instead, set:
+Check available models:
 
-```env
-LLM_PROVIDER=openai
-OPENAI_API_KEY=your_key_here
-OPENAI_MODEL=gpt-4.1-mini
+```bash
+ollama list
 ```
 
-### 5. Run API
+Test Ollama:
+
+```bash
+ollama run llama3.1:8b "say ok"
+```
+
+---
+
+## 6. Run the Backend
 
 ```bash
 uvicorn app.main:app --reload
 ```
 
-Open API docs:
+Backend API:
 
 ```text
-http://localhost:8000/docs
+http://127.0.0.1:8000
 ```
 
-## Example usage
+Swagger docs:
 
-### Upload a file
+```text
+http://127.0.0.1:8000/docs
+```
+
+Health check:
+
+```text
+http://127.0.0.1:8000/health
+```
+
+Expected response:
+
+```json
+{
+  "status": "ok"
+}
+```
+
+---
+
+## 7. Run the Frontend
+
+Open a second terminal, activate the virtual environment, then run:
 
 ```bash
-curl -X POST "http://localhost:8000/documents" \
-  -F "file=@sample_docs/company_policy.txt"
+streamlit run streamlit_app.py
 ```
 
-### Ask a question
+Frontend URL:
+
+```text
+http://localhost:8501
+```
+
+---
+
+## Smoke Test
+
+Run this after the backend is running:
 
 ```bash
-curl -X POST "http://localhost:8000/ask" \
-  -H "Content-Type: application/json" \
-  -d '{"question":"What is the refund policy?","top_k":5}'
+python scripts\smoke_test.py
 ```
 
-## API endpoints
+The smoke test checks:
 
-| Method | Endpoint | Description |
-|---|---|---|
-| GET | `/health` | Health check |
-| POST | `/documents` | Upload and ingest document |
-| GET | `/documents` | List documents |
-| POST | `/ask` | Ask question using RAG |
+* Health endpoint
+* Document upload
+* Question answering
+* Source retrieval
 
-## Portfolio improvements to add later
+Example successful output:
 
-1. User authentication
-2. Multi-tenant workspaces
-3. Document deletion and re-indexing
-4. Evaluation dataset and RAG quality metrics
-5. Streaming responses
-6. Admin dashboard
-7. Deployment to AWS ECS or Railway
-8. CI/CD with GitHub Actions
-9. Observability with Prometheus + Grafana
-10. Role-based access control
+```text
+Health: {'status': 'ok'}
+Upload: 200 {...}
+Ask: 200 {...}
+```
 
-## Interview explanation
+---
 
-This project uses RAG instead of relying only on the LLM's memory. Documents are split into chunks, each chunk is embedded into a vector, and vectors are stored in PostgreSQL using pgvector. When a user asks a question, the system embeds the question, searches for the most semantically similar chunks, and passes only those chunks into the LLM as context. The final answer includes citations so the user can trace the answer back to source documents.
+## API Overview
+
+### Health Check
+
+```http
+GET /health
+```
+
+Checks whether the backend is running.
+
+---
+
+### Upload Document
+
+```http
+POST /documents
+```
+
+Uploads a `.txt` or `.pdf` document, extracts text, chunks it, generates embeddings, and stores it in PostgreSQL.
+
+---
+
+### List Documents
+
+```http
+GET /documents
+```
+
+Returns all indexed documents.
+
+---
+
+### Delete Document
+
+```http
+DELETE /documents/{document_id}
+```
+
+Deletes a document and its related chunks.
+
+---
+
+### Ask Question
+
+```http
+POST /ask
+```
+
+Asks a question against all indexed documents.
+
+Example request:
+
+```json
+{
+  "question": "When should support escalate a ticket to engineering?",
+  "top_k": 3
+}
+```
+
+Example response:
+
+```json
+{
+  "answer": "Support agents should escalate tickets to engineering if the issue involves repeated payment failure, missing transaction records, data inconsistency, security risk, or service downtime.",
+  "sources": [
+    {
+      "document_id": 1,
+      "filename": "company_policy.txt",
+      "chunk_id": 1,
+      "chunk_index": 0,
+      "similarity": 0.3162,
+      "content_preview": "..."
+    }
+  ],
+  "metadata": {
+    "top_k": 3
+  }
+}
+```
+
+---
+
+### Create Conversation
+
+```http
+POST /conversations
+```
+
+Creates a new conversation.
+
+Example request:
+
+```json
+{
+  "title": "Support policy test"
+}
+```
+
+---
+
+### List Conversations
+
+```http
+GET /conversations
+```
+
+Returns all conversations.
+
+---
+
+### Ask Inside Conversation
+
+```http
+POST /conversations/{conversation_id}/ask
+```
+
+Asks a question inside a conversation and saves both the user question and assistant answer.
+
+Example request:
+
+```json
+{
+  "question": "When should support escalate a ticket to engineering?",
+  "top_k": 3
+}
+```
+
+---
+
+### Get Conversation Messages
+
+```http
+GET /conversations/{conversation_id}/messages
+```
+
+Returns saved user and assistant messages for a conversation.
+
+Example response:
+
+```json
+[
+  {
+    "id": 1,
+    "conversation_id": 1,
+    "role": "user",
+    "content": "When should support escalate a ticket to engineering?",
+    "created_at": "2026-06-11T06:35:27.005579Z"
+  },
+  {
+    "id": 2,
+    "conversation_id": 1,
+    "role": "assistant",
+    "content": "Support agents should escalate tickets to engineering if...",
+    "created_at": "2026-06-11T06:35:29.112345Z"
+  }
+]
+```
+
+---
+
+## Frontend Usage
+
+The Streamlit frontend supports:
+
+1. Checking backend health
+2. Uploading documents
+3. Viewing indexed documents
+4. Deleting documents
+5. Creating conversations
+6. Selecting conversations
+7. Asking questions
+8. Viewing generated answers
+9. Expanding retrieved source citations
+10. Reading conversation history
+
+---
+
+## Example Document
+
+The sample document contains support policy information such as refund rules, escalation rules, account access rules, and service-level expectations.
+
+Example question:
+
+```text
+When should support escalate a ticket to engineering?
+```
+
+Example answer:
+
+```text
+Support agents should escalate tickets to engineering if the issue involves repeated payment failure, missing transaction records, data inconsistency, security risk, or service downtime.
+```
+
+---
+
+## Duplicate Document Protection
+
+This project prevents duplicate ingestion by hashing normalized document text.
+
+If the same document is uploaded multiple times, the system returns the existing document instead of creating duplicate chunks and embeddings.
+
+This avoids:
+
+* Duplicate search results
+* Unnecessary embedding generation
+* Wasted database storage
+* Repeated source citations from identical documents
+
+---
+
+## Why This Project Matters
+
+This project shows how a traditional backend system can be upgraded with AI capabilities.
+
+It demonstrates:
+
+* Backend API design
+* Database modeling
+* Vector search
+* Document ingestion
+* RAG architecture
+* Local LLM integration
+* Source-grounded answer generation
+* Conversation persistence
+* Basic product UI development
+
+This is closer to a real AI backend system than a simple chatbot demo.
+
+---
+
+## Portfolio Summary
+
+Built a full-stack RAG support assistant that allows users to upload documents, perform semantic search over indexed knowledge, and receive grounded AI-generated answers with source citations.
+
+Implemented document ingestion, text chunking, embedding generation, pgvector retrieval, duplicate document protection, document deletion, conversation history, FastAPI APIs, and a Streamlit frontend using Ollama for local LLM inference.
+
+---
+
+## Screenshots
+
+Create a `docs/screenshots/` folder and add screenshots later.
+
+Recommended screenshots:
+
+```text
+docs/screenshots/streamlit-home.png
+docs/screenshots/answer-sources.png
+docs/screenshots/swagger-docs.png
+```
+
+Then uncomment or add this section:
+
+```md
+### Streamlit Frontend
+
+![Streamlit Frontend](docs/screenshots/streamlit-home.png)
+
+### Answer With Sources
+
+![Answer With Sources](docs/screenshots/answer-sources.png)
+
+### FastAPI Swagger Docs
+
+![Swagger Docs](docs/screenshots/swagger-docs.png)
+```
+
+---
+
+## Future Improvements
+
+Potential next features:
+
+* Workspace separation
+* User authentication
+* Role-based access control
+* Per-workspace document search
+* Better PDF parsing
+* File metadata extraction
+* RAG evaluation scripts
+* Hybrid search with keyword + vector search
+* Reranking retrieved chunks
+* Streaming LLM responses
+* Dockerize backend and frontend
+* Cloud deployment
+* CI/CD pipeline
+* Automated tests
+
+---
+
+## Current Status
+
+The project currently supports the core document lifecycle:
+
+```text
+Upload document
+Prevent duplicate upload
+List documents
+Delete document
+Ask questions from indexed documents
+Save conversation history
+View and use the system through Streamlit UI
+```
