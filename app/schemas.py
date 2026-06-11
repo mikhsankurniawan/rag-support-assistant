@@ -30,3 +30,22 @@ class AskResponse(BaseModel):
     answer: str
     sources: list[SourceChunk]
     metadata: dict[str, Any] = {}
+
+
+class ConversationCreateRequest(BaseModel):
+    title: str = Field(default="New conversation", min_length=1, max_length=255)
+
+
+class ConversationResponse(BaseModel):
+    id: int
+    title: str
+    created_at: datetime
+
+
+class MessageResponse(BaseModel):
+    id: int
+    conversation_id: int
+    role: str
+    content: str
+    created_at: datetime
+    
