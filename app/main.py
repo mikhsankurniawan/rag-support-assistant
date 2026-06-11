@@ -1,6 +1,6 @@
 from contextlib import asynccontextmanager
 
-from fastapi import Depends, FastAPI, File, HTTPException, UploadFile
+from fastapi import Depends, FastAPI, File, HTTPException, Response, UploadFile
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
@@ -207,3 +207,17 @@ def ask_in_conversation(
         },
     )
     
+
+@app.delete("/documents/{document_id}", status_code=204)
+def delete_document(
+    document_id: int,
+    session: Session = Depends(get_session),
+) -> Response:
+    document = session.get(Document, document_id)
+    if document is None:
+        raise HTTPException(status_code=404, detail="Document not found.")
+
+    session.delete(document)
+    session.commit()
+
+    return Response(status_code=204)
