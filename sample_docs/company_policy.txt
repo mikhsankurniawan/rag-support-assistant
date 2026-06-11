@@ -1,0 +1,13 @@
+Acme Digital Support Policy
+
+Refund Policy:
+Customers may request a refund within 14 days of purchase if the service has not been used extensively. Refund requests must include the order ID, payment proof, and reason for refund. Approved refunds are processed within 7 business days.
+
+Password Reset Policy:
+Users can reset their password from the login page by clicking Forgot Password. A reset link is sent to the registered email address. The link expires after 30 minutes.
+
+Escalation Policy:
+Support agents should escalate tickets to engineering if the issue involves repeated payment failure, missing transaction records, data inconsistency, security risk, or service downtime.
+
+Service Level Agreement:
+Critical issues should receive a first response within 30 minutes. High priority issues should receive a first response within 2 hours. Normal issues should receive a first response within 1 business day.
