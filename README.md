@@ -1,6 +1,6 @@
 # RAG Support Assistant
 
-![Tests](https://github.com/YOUR_USERNAME/rag-support-assistant/actions/workflows/tests.yml/badge.svg)
+![Tests](https://github.com/mikhsankurniawan/rag-support-assistant/actions/workflows/tests.yml/badge.svg)
 
 A full-stack internal knowledge assistant that lets users upload support documents, ask questions, and receive grounded AI-generated answers with source citations.
 
