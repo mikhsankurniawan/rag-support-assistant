@@ -1,5 +1,7 @@
 # RAG Support Assistant
 
+![Tests](https://github.com/YOUR_USERNAME/rag-support-assistant/actions/workflows/tests.yml/badge.svg)
+
 A full-stack internal knowledge assistant that lets users upload support documents, ask questions, and receive grounded AI-generated answers with source citations.
 
 This project demonstrates a production-oriented Retrieval-Augmented Generation pipeline using **FastAPI**, **PostgreSQL**, **pgvector**, **Sentence Transformers**, **Ollama**, and **Streamlit**.
