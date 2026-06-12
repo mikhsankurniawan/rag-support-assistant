@@ -21,6 +21,7 @@ httptools==0.8.0
 httpx==0.28.1
 huggingface_hub==0.36.2
 idna==3.18
+iniconfig==2.3.0
 Jinja2==3.1.6
 jiter==0.15.0
 joblib==1.5.3
@@ -38,6 +39,7 @@ packaging==24.2
 pandas==2.3.3
 pgvector==0.3.6
 pillow==11.3.0
+pluggy==1.6.0
 protobuf==5.29.6
 psycopg==3.2.3
 psycopg-binary==3.2.3
@@ -48,6 +50,8 @@ pydantic_core==2.46.4
 pydeck==0.9.2
 Pygments==2.20.0
 pypdf==5.1.0
+pytest==8.3.4
+pytest-asyncio==0.25.0
 python-dateutil==2.9.0.post0
 python-dotenv==1.2.2
 python-multipart==0.0.20
