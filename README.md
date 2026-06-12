@@ -310,6 +310,16 @@ Ask: 200 {...}
 
 ---
 
+## Running Tests
+
+Run the automated test suite:
+
+```bash
+pytest
+```
+
+---
+
 ## API Overview
 
 ### Health Check
