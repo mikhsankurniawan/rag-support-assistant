@@ -2,7 +2,7 @@
 
 A full-stack internal knowledge assistant that lets users upload support documents, ask questions, and receive grounded AI-generated answers with source citations.
 
-This project demonstrates a production-style Retrieval-Augmented Generation pipeline using **FastAPI**, **PostgreSQL**, **pgvector**, **Sentence Transformers**, **Ollama**, and **Streamlit**.
+This project demonstrates a production-oriented Retrieval-Augmented Generation pipeline using **FastAPI**, **PostgreSQL**, **pgvector**, **Sentence Transformers**, **Ollama**, and **Streamlit**.
 
 The goal of this project is not only to build a chatbot, but to show how a normal backend system can be extended with AI capabilities such as document ingestion, semantic search, grounded answer generation, source citation, duplicate protection, and conversation history.
 
@@ -111,6 +111,9 @@ rag-support-mvp/
 │       ├── ingestion.py
 │       ├── llm.py
 │       └── rag.py
+│
+├── docs/
+│   └── screenshots/
 │
 ├── sample_docs/
 │   └── company_policy.txt
@@ -515,49 +518,26 @@ This avoids:
 
 ---
 
-## Why This Project Matters
+## Current Status
 
-This project shows how a traditional backend system can be upgraded with AI capabilities.
+The project currently supports the core document lifecycle:
 
-It demonstrates:
+```text
+Upload document
+Prevent duplicate upload
+List documents
+Delete document
+Ask questions from indexed documents
+Save conversation history
+Use the system through a Streamlit UI
+```
 
-* Backend API design
-* Database modeling
-* Vector search
-* Document ingestion
-* RAG architecture
-* Local LLM integration
-* Source-grounded answer generation
-* Conversation persistence
-* Basic product UI development
-
-This is closer to a real AI backend system than a simple chatbot demo.
-
----
-
-## Portfolio Summary
-
-Built a full-stack RAG support assistant that allows users to upload documents, perform semantic search over indexed knowledge, and receive grounded AI-generated answers with source citations.
-
-Implemented document ingestion, text chunking, embedding generation, pgvector retrieval, duplicate document protection, document deletion, conversation history, FastAPI APIs, and a Streamlit frontend using Ollama for local LLM inference.
+This version focuses on the core RAG workflow and local development experience.
 
 ---
 
 ## Screenshots
 
-Create a `docs/screenshots/` folder and add screenshots later.
-
-Recommended screenshots:
-
-```text
-docs/screenshots/streamlit-home.png
-docs/screenshots/answer-sources.png
-docs/screenshots/swagger-docs.png
-```
-
-Then uncomment or add this section:
-
-```md
 ### Streamlit Frontend
 
 ![Streamlit Frontend](docs/screenshots/streamlit-home.png)
@@ -569,7 +549,6 @@ Then uncomment or add this section:
 ### FastAPI Swagger Docs
 
 ![Swagger Docs](docs/screenshots/swagger-docs.png)
-```
 
 ---
 
@@ -584,26 +563,10 @@ Potential next features:
 * Better PDF parsing
 * File metadata extraction
 * RAG evaluation scripts
-* Hybrid search with keyword + vector search
+* Hybrid search with keyword and vector search
 * Reranking retrieved chunks
 * Streaming LLM responses
-* Dockerize backend and frontend
+* Dockerized backend and frontend
 * Cloud deployment
 * CI/CD pipeline
 * Automated tests
-
----
-
-## Current Status
-
-The project currently supports the core document lifecycle:
-
-```text
-Upload document
-Prevent duplicate upload
-List documents
-Delete document
-Ask questions from indexed documents
-Save conversation history
-View and use the system through Streamlit UI
-```
