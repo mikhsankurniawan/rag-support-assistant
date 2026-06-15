@@ -28,6 +28,8 @@ The goal of this project is not only to build a chatbot, but to show how a norma
 * Store user and assistant message history
 * Use FastAPI Swagger docs for API testing
 * Use Streamlit as a simple frontend demo
+* Includes automated tests for core backend behavior
+* Runs with Docker Compose for local development
 
 ---
 
@@ -61,6 +63,7 @@ The goal of this project is not only to build a chatbot, but to show how a norma
 
 * Docker Compose
 * PostgreSQL container with pgvector extension
+* GitHub Actions CI
 
 ---
 
@@ -99,6 +102,10 @@ Conversation history is saved
 ```text
 rag-support-mvp/
 │
+├── .github/
+│   └── workflows/
+│       └── tests.yml
+│
 ├── app/
 │   ├── main.py
 │   ├── config.py
@@ -123,9 +130,17 @@ rag-support-mvp/
 ├── scripts/
 │   └── smoke_test.py
 │
+├── tests/
+│   ├── test_chunker.py
+│   ├── test_hashing.py
+│   └── test_health.py
+│
 ├── streamlit_app.py
+├── Dockerfile.api
+├── Dockerfile.frontend
 ├── docker-compose.yml
 ├── requirements.txt
+├── pytest.ini
 ├── .env.example
 ├── .gitignore
 └── README.md
@@ -244,19 +259,19 @@ uvicorn app.main:app --reload
 Backend API:
 
 ```text
-http://127.0.0.1:8000
+http://localhost:8000
 ```
 
 Swagger docs:
 
 ```text
-http://127.0.0.1:8000/docs
+http://localhost:8000/docs
 ```
 
 Health check:
 
 ```text
-http://127.0.0.1:8000/health
+http://localhost:8000/health
 ```
 
 Expected response:
@@ -281,6 +296,56 @@ Frontend URL:
 
 ```text
 http://localhost:8501
+```
+
+---
+
+## Running with Docker Compose
+
+The project can also run with Docker Compose. This starts the PostgreSQL database, FastAPI backend, and Streamlit frontend.
+
+Ollama should still run locally outside Docker.
+
+Make sure the Ollama model is available:
+
+```bash
+ollama pull llama3.1:8b
+```
+
+Test Ollama locally:
+
+```bash
+ollama run llama3.1:8b "say ok"
+```
+
+Then start the Dockerized services:
+
+```bash
+docker compose up --build
+```
+
+Backend health check:
+
+```text
+http://localhost:8000/health
+```
+
+FastAPI Swagger docs:
+
+```text
+http://localhost:8000/docs
+```
+
+Streamlit frontend:
+
+```text
+http://localhost:8501
+```
+
+The Dockerized backend connects to the local Ollama server through:
+
+```text
+http://host.docker.internal:11434
 ```
 
 ---
@@ -317,6 +382,12 @@ Run the automated test suite:
 ```bash
 pytest
 ```
+
+The current test suite covers:
+
+* Text chunking behavior
+* Content hashing for duplicate document protection
+* Health check API behavior
 
 ---
 
@@ -542,6 +613,8 @@ Delete document
 Ask questions from indexed documents
 Save conversation history
 Use the system through a Streamlit UI
+Run the backend and frontend with Docker Compose
+Run automated tests locally and in GitHub Actions
 ```
 
 This version focuses on the core RAG workflow and local development experience.
@@ -578,7 +651,6 @@ Potential next features:
 * Hybrid search with keyword and vector search
 * Reranking retrieved chunks
 * Streaming LLM responses
-* Dockerized backend and frontend
 * Cloud deployment
-* CI/CD pipeline
-* Automated tests
+* Monitoring and observability
+* More comprehensive API tests
