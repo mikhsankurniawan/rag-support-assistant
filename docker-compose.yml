@@ -3,18 +3,42 @@ services:
     image: pgvector/pgvector:pg16
     container_name: rag-support-db
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: rag_user
+      POSTGRES_PASSWORD: rag_password
       POSTGRES_DB: rag_support
     ports:
       - "5432:5432"
     volumes:
-      - pg_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d rag_support"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
+      - rag_support_data:/var/lib/postgresql/data
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: rag-support-api
+    environment:
+      DATABASE_URL: postgresql+psycopg://rag_user:rag_password@db:5432/rag_support
+      EMBEDDING_MODEL: sentence-transformers/all-MiniLM-L6-v2
+      LLM_PROVIDER: ollama
+      OLLAMA_BASE_URL: http://host.docker.internal:11434
+      OLLAMA_MODEL: llama3.1:8b
+      OPENAI_API_KEY: ""
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: rag-support-frontend
+    environment:
+      API_BASE_URL: http://api:8000
+    ports:
+      - "8501:8501"
+    depends_on:
+      - api
 
 volumes:
-  pg_data:
+  rag_support_data:
